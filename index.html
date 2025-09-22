@@ -11,28 +11,224 @@
       height: 100vh;
       background-color: #fae6ef;
       font-family: Arial, sans-serif;
+      text-align: center;
     }
 
     button {
-      background-color: #3a4fd7; /* bright pink */
+      background-color: #3a4fd7; 
       color: white;
       border: none;
-      padding: 40px 80px; /* huge size */
-      font-size: 40px;    /* huge text */
+      padding: 40px 80px;
+      font-size: 40px;
       border-radius: 20px;
       cursor: pointer;
       transition: background 0.3s ease, transform 0.2s ease;
+      margin-top: 100px;
     }
 
     button:hover {
-      background-color: lightblue; /* darker pink on hover */
+      background-color: lightblue; 
       transform: scale(1.05);
+    }
+
+    /* Tic Tac Toe styles */
+    #game {
+      margin-top: 50px;
+    }
+
+    #board {
+      display: grid;
+      grid-template-columns: repeat(3, 100px);
+      grid-template-rows: repeat(3, 100px);
+      gap: 5px;
+      justify-content: center;
+      margin: 20px auto;
+    }
+
+    .cell {
+      background: white;
+      border: 2px solid #3a4fd7;
+      font-size: 48px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      border-radius: 10px;
+    }
+
+    .cell.taken {
+      cursor: not-allowed;
+      color: #3a4fd7;
+    }
+
+    #status {
+      font-size: 24px;
+      margin-top: 15px;
+      color: #3a4fd7;
+    }
+
+    #reset {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 20px;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      background-color: #3a4fd7;
+      color: white;
+    }
+
+    #reset:hover {
+      background-color: lightblue;
+      color: black;
+    }
+    .d-none {
+      display: none;
+    }
+    h2, p {
+      margin: 10px;
+    }
+    ul {
+      list-style-type: none;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background-color: #333333;
+    }
+
+    ul li {
+      float: left;
+    }
+
+    ul li a {
+      display: block;
+      color: white;
+      text-align: center;
+      padding: 14px 16px;
+      text-decoration: none;
+    }
+
+    ul li a:hover {
+      background-color: #111111;
     }
   </style>
 </head>
 <body>
-  <h1>Website for you</h1>
-  <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Debitis ad cum commodi perspiciatis voluptas laudantium odio repellat aut fugit pariatur enim, dicta vero molestias tenetur sunt dolorum porro ratione tempora!</p>
-  <button onclick="alert('If you love me then i love you toooo!!')">Do you love me?</button>
+  <ul>
+    <li><a href="">Introduction</a></li>
+    <li><a onclick="showTicTacToe()">Play a Game</a></li>
+    <li><a onclick="showLoveCheck()">Love Check</a></li>
+  </ul>
+  <div id="intro">
+    <h1>Website for you</h1>
+    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Debitis ad cum commodi perspiciatis voluptas laudantium odio repellat aut fugit pariatur enim, dicta vero molestias tenetur sunt dolorum porro ratione tempora!</p>
+  </div>
+  <button id="love" onclick="alert('If you love me then I love you toooo!!')" class="d-none">Do you love me?</button>
+  <!-- Tic Tac Toe Game -->
+  <div id="game" class="d-none">
+    <h2>Tic Tac Toe</h2>
+    <div id="board"></div>
+    <div id="status">Player X's turn</div>
+    <button id="reset">Restart Game</button>
+  </div>
+
+  <script>
+    function showTicTacToe() {
+      let el = document.querySelector('#game');
+      el.classList.remove("d-none");
+      hideIntro()
+      hideLoveCheck()
+    }
+    function showLoveCheck() {
+      let el = document.querySelector('#love');
+      el.classList.remove("d-none");
+      hideTicTacToe()
+      hideIntro()
+    }
+    function showIntro() {
+      let el = document.querySelector('#intro');
+      el.classList.remove("d-none");
+      hideLoveCheck()
+      hideTicTacToe()
+    }
+    function hideTicTacToe() {
+      let el = document.querySelector('#game');
+      el.classList.add("d-none");
+    }
+    function hideLoveCheck() {
+      let el = document.querySelector('#love');
+      el.classList.add("d-none");
+    }
+    function hideIntro() {
+      let el = document.querySelector('#intro');
+      el.classList.add("d-none");
+    }
+    const board = document.getElementById("board");
+    const statusText = document.getElementById("status");
+    const resetBtn = document.getElementById("reset");
+    let currentPlayer = "X";
+    let cells = Array(9).fill(null);
+    let gameOver = false;
+
+    // Create 9 cells
+    function createBoard() {
+      board.innerHTML = "";
+      cells.fill(null);
+      gameOver = false;
+      currentPlayer = "X";
+      statusText.textContent = "Player X's turn";
+
+      for (let i = 0; i < 9; i++) {
+        const cell = document.createElement("div");
+        cell.classList.add("cell");
+        cell.dataset.index = i;
+        cell.addEventListener("click", handleMove);
+        board.appendChild(cell);
+      }
+    }
+
+    function handleMove(e) {
+      const index = e.target.dataset.index;
+
+      if (cells[index] || gameOver) return;
+
+      cells[index] = currentPlayer;
+      e.target.textContent = currentPlayer;
+      e.target.classList.add("taken");
+
+      if (checkWin(currentPlayer)) {
+        statusText.textContent = `Player ${currentPlayer} wins! 🎉`;
+        gameOver = true;
+        return;
+      }
+
+      if (cells.every(cell => cell)) {
+        statusText.textContent = "It's a draw!";
+        gameOver = true;
+        return;
+      }
+
+      currentPlayer = currentPlayer === "X" ? "O" : "X";
+      statusText.textContent = `Player ${currentPlayer}'s turn`;
+    }
+
+    function checkWin(player) {
+      const winPatterns = [
+        [0,1,2],[3,4,5],[6,7,8], // rows
+        [0,3,6],[1,4,7],[2,5,8], // cols
+        [0,4,8],[2,4,6]          // diagonals
+      ];
+
+      return winPatterns.some(pattern =>
+        pattern.every(index => cells[index] === player)
+      );
+    }
+
+    resetBtn.addEventListener("click", createBoard);
+
+    // Initialize
+    createBoard();
+  </script>
 </body>
 </html>
