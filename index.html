@@ -119,6 +119,7 @@
     <li><a onclick="showIntro()">Introduction</a></li>
     <li><a onclick="showTicTacToe()">Play a Game</a></li>
     <li><a onclick="showLoveCheck()">Love Check</a></li>
+    <li><a onclick="showNamazImings()">Namaz Timings</a></li>
   </ul>
   <div id="intro">
     <h1>HI I am Hamza!</h1>
@@ -135,6 +136,15 @@
     <div id="status">Player X's turn</div>
     <button id="reset">Restart Game</button>
   </div>
+  <div id="namaz" class="d-none">
+    <ol>
+      <li>Fajr: <span id="fajr-time"></span></li>
+      <li>Dhuhr: <span id="dhuhr-time"></span></li>
+      <li>Asr: <span id="asr-time"></span></li>
+      <li>Maghrib: <span id="maghrib-time"></span></li>
+      <li>Isha: <span id="isha-time"></span></li>
+    </ol>
+  </div>
 
   <script>
     function showTicTacToe() {
@@ -142,18 +152,21 @@
       el.classList.remove("d-none");
       hideIntro()
       hideLoveCheck()
+      hideNamaz()
     }
     function showLoveCheck() {
       let el = document.querySelector('#love');
       el.classList.remove("d-none");
       hideTicTacToe()
       hideIntro()
+      hideNamaz()
     }
     function showIntro() {
       let el = document.querySelector('#intro');
       el.classList.remove("d-none");
       hideLoveCheck()
       hideTicTacToe()
+      hideNamaz()
     }
     function hideTicTacToe() {
       let el = document.querySelector('#game');
@@ -166,6 +179,40 @@
     function hideIntro() {
       let el = document.querySelector('#intro');
       el.classList.add("d-none");
+    }
+    function hideNamaz() {
+      let el = document.querySelector('#namaz');
+      el.classList.add("d-none");
+    }
+    function showNamazImings() {
+      let el = document.querySelector('#namaz');
+      el.classList.remove("d-none");
+      hideIntro()
+      hideLoveCheck()
+      hideTicTacToe()
+      const today = new Date();
+      const day = String(today.getDate()).padStart(2, '0');  // Adds leading zero if day < 10
+      const month = String(today.getMonth() + 1).padStart(2, '0');  // Adds leading zero if month < 10
+      const year = today.getFullYear();
+      const formattedDate = `${day}-${month}-${year}`;
+      fetch(`https://api.aladhan.com/v1/timingsByCity/${formattedDate}?city=Lahore&country=PK&state=Punjab&method=1&shafaq=general&tune=5%2C3%2C5%2C7%2C9%2C-1%2C0%2C8%2C-6&timezonestring=Asia%2FKarachi&calendarMethod=UAQ`)
+      .then(response => {
+        // Check if the response is OK (status 200-299)
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.json(); 
+      })
+      .then(data => {
+        document.getElementById('fajr-time').innerText = data.data.timings.Fajr;
+        document.getElementById('dhuhr-time').innerText = data.data.timings.Dhuhr;
+        document.getElementById('asr-time').innerText = data.data.timings.Asr;
+        document.getElementById('maghrib-time').innerText = data.data.timings.Maghrib;
+        document.getElementById('isha-time').innerText = data.data.timings.Isha;
+      })
+      .catch(error => {
+        console.error('There was a problem with the fetch operation:', error);
+      });
     }
     const board = document.getElementById("board");
     const statusText = document.getElementById("status");
